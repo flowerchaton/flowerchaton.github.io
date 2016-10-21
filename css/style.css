@@ -11,7 +11,7 @@ body{
 }
 
 #content{
-	margin: auto;
+	margin: 0 auto;
 	width: 50%;
 	height: 570px;
 	position: relative;
@@ -57,10 +57,8 @@ body{
 li > a{
 	padding: 10px;
 	text-decoration: none;
-	color: cornflowerblue;
-	border-left: 2px solid darkslateblue;
-	border-bottom: 2px dashed darkslateblue;
-
+	color: #6c6894;
+	border-bottom: 2px dashed #6c6894;
 }
 
 footer{
@@ -69,10 +67,10 @@ footer{
 	text-align: center;
 	font-family: Verdana, Geneva, Tahoma, sans-serif;
 	font-size: 2em;
-	color: lightseagreen
+	color: 	#43486a
 }
 footer > small {
-	color: darkorchid;
+	color: #f68c5f
 }
 
 
