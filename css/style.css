@@ -3,58 +3,54 @@
 	src: url(../font/the_drunked_man_st.ttf);
 }
 
-
-body{
-	width: 100%;
-	height: 100%;
-	margin: 0px;
-}
-
-#content{
-	margin: 0 auto;
-	width: 50%;
-	height: 570px;
+.content{
+	width:75vw;
+	height: 75vh;
 	position: relative;
+	margin: auto;
 }
 
 
-#logo{
-	position: absolute;
-	left: 20px;
-	top:70px;
-	height: 300px;
+
+.menu{
+	position:relative;
+	left: 8%;
+	width: 500px;
+	margin: 0 auto;
+
+}
+
+.portrait{
+
 	width: 200px;
-}
-#content > nav{
-	margin: 0px;
-	padding: 0px;
+	height: 300px;
 	position: absolute;
-	left: 100px;
-	z-index: -1;
+	left: -15%;
+	top: 10%;
+
 }
 
-#content > nav > ul{
-	z-index: 0;
+.menu > ul {
+	z-index: 1;
 	position: absolute;
-	margin: 0;
-	padding: 0;
 	top:20%;
-	left: 30%;
+	left: 28%;
 	width: 50%;
 	height: 60%;
+
 	-webkit-transform: rotate(15deg);
 	-ms-transform: rotate(15deg);
 	-o-transform: rotate(15deg);
 	transform: rotate(15deg);
 }
 
-#content > nav > ul > li{
+.menu > ul > li{
 	font-family: drunkedMan;
 	display: block;
-	padding: 40px;
+	padding: 30px;
 }
 
-li > a{
+ul > li > a{
 	padding: 10px;
 	text-decoration: none;
 	color: #6c6894;
@@ -72,10 +68,6 @@ footer{
 footer > small {
 	color: #f68c5f
 }
-
-
-
-
 
 
 
