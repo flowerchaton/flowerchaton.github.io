@@ -1,0 +1,24 @@
+* {
+	margin: 0;
+}
+::-webkit-scrollbar{
+	display: none;
+}
+
+.showcase{
+	overflow-x: auto;
+	white-space: nowrap;
+	border: orangered solid 5px;
+}
+
+img{
+	margin: 10px;
+	display: inline-block;
+	max-height: 200px;
+	border: sandybrown solid 10px;
+}
+
+
+
+
+
