@@ -11,13 +11,25 @@
 	border: orangered solid 5px;
 }
 
-img{
-	margin: 10px;
+
+
+.picture {
+	background-size: cover;
 	display: inline-block;
-	max-height: 200px;
-	border: sandybrown solid 10px;
+	border: 5px solid snow;
+	margin: 10px;
+	box-shadow: 0 4px 5px 5px lightgray;
 }
 
+.square{
+	width: 200px;
+	height: 200px;
+}
+
+.rectangle{
+	width: 400px;
+	height: 200px;
+}
 
 
 
