@@ -1,35 +1,68 @@
-* {
+body{
 	margin: 0;
 }
+
 ::-webkit-scrollbar{
 	display: none;
 }
 
+.gallery{
+	width: 100vw;
+	overflow: hidden;
+}
+
 .showcase{
-	overflow-x: auto;
+	margin-top: 100px;
+	overflow: auto;
+	min-height: 390px;
 	white-space: nowrap;
-	border: orangered solid 5px;
 }
 
 
 
 .picture {
 	background-size: cover;
+	background-position: center;
 	display: inline-block;
-	border: 5px solid snow;
-	margin: 10px;
-	box-shadow: 0 4px 5px 5px lightgray;
+	vertical-align: top;
+	border: 10px solid snow;
+	margin: 15px;
+	box-shadow: 0 4px 10px 1px lightgray;
 }
 
 .square{
-	width: 200px;
-	height: 200px;
+	width: 150px;
+	height: 150px;
 }
 
-.rectangle{
-	width: 400px;
-	height: 200px;
+.rectangle-horizontal{
+	width: 350px;
+	height: 180px;
 }
+
+.rectangle-vertical{
+	width: 180px;
+	height: 250px;
+}
+
+div{
+	perspective: 150px;
+	perspective-origin: 50% 50%;
+}
+
+.floor{
+	background-repeat: repeat-x;
+	background-size: 50%;
+	background-image: url("../img/floor.jpg");
+	position: relative;
+	left: -50%;
+	width: 200%;
+	transform: rotateX(40deg);
+	height: calc(100vh - 490px);
+	box-shadow: 0 -6px 10px 5px lightgray;
+}
+
+
 
 
 
