@@ -45,7 +45,7 @@ body{
 	height: 250px;
 }
 
-div{
+.perspective{
 	perspective: 150px;
 	perspective-origin: 50% 50%;
 }
@@ -59,7 +59,7 @@ div{
 	width: 200%;
 	transform: rotateX(40deg);
 	height: calc(100vh - 490px);
-	box-shadow: 0 -6px 10px 5px lightgray;
+	box-shadow: 0 -3px 10px 5px lightgray;
 }
 
 
