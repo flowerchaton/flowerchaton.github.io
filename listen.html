@@ -1,12 +1,34 @@
 <!DOCTYPE html>
 <html lang="en">
-	<head>
-		<title></title>
-		<meta charset="UTF-8">
-		<meta name="viewport" content="width=device-width, initial-scale=1">
-		<link href="css/style.css" rel="stylesheet">
-	</head>
-	<body>
-	
-	</body>
+
+<head>
+	<title></title>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link href="css/listen.css" rel="stylesheet">
+	<script src="js/vue.js"></script>
+	<script src="js/jquery.min.js"></script>
+</head>
+
+
+<template id="record-template">
+	<div class="record" @click="playRecord">
+		<h1> {{ data.name }} </h1>
+	</div>
+</template>
+
+<body>
+	<main id="app">
+		<aside >
+			<record v-for="record in records" :data="record">
+				<record/>
+		</aside>
+		<div class="playing-record"></div>
+	</main>
+
+	<script src="js/listen.js"></script>
+
+</body>
+
+
 </html>

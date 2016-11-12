@@ -1,0 +1,39 @@
+body{
+	width: 100vw;
+	height: 100vh;
+	overflow: hidden;
+	margin: 0;
+}
+main{
+	overflow: auto;
+}
+aside{
+	padding: 0; 
+	float: left;
+	height: calc(100vh - 10px);
+	overflow-y: auto;
+}
+
+.playing-record{
+	width: 20vw;
+	height: 20vw;
+	border: mediumspringgreen solid 1px;
+	position: relative;
+	top: 50vh;
+	left: 25vw;
+	z-index: 1;
+}
+
+.record{
+	width: 20vw;
+	height: 20vw;
+	display: block;
+	border: crimson solid 1px;
+	position:relative;
+	z-index: 0;
+}
+
+button{
+	width: 100px;
+	height: 100px;
+}
