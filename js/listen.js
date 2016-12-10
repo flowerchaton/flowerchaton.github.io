@@ -1,5 +1,4 @@
 {
-
 	let Colors = {
 		lightGrey: 0xd7d7d7,
 		black: 0x000000,
@@ -7,7 +6,6 @@
 	}
 
 	let scene, camera, renderer;
-
 	// scene setting
 	scene = new THREE.Scene();
 	scene.background = new THREE.Color(Colors.white);
@@ -19,7 +17,8 @@
 	// render setting
 	renderer = new THREE.WebGLRenderer();
 	renderer.setSize(window.innerWidth, window.innerHeight);
-	document.body.appendChild(renderer.domElement);
+	renderer.setPixelRatio( window.devicePixelRatio );
+	document.getElementById('music-room').appendChild(renderer.domElement);
 
 	// music player
 	let geometry, material;
@@ -42,8 +41,8 @@
 	material = new THREE.MeshBasicMaterial({ color: Colors.black, side: THREE.DoubleSide });
 	let record = new THREE.Mesh(geometry, material);
 	// record cover
-	let coverTexture = new THREE.TextureLoader().load('../img/fc.jpg');
-
+	let coverTexture = new THREE.TextureLoader().load('./img/fc.jpg');
+	coverTexture.mapping = THREE.UVMapping;
 	geometry = new THREE.CircleGeometry(0.3, 16);
 	material = new THREE.MeshBasicMaterial({
 		color: Colors.white,
@@ -105,6 +104,7 @@
 	let head = new THREE.Mesh(geometry, material);
 	head.position.z = 0.8;
 	head.position.x = -0.15;
+
 	// niddle
 	geometry = new THREE.ConeGeometry(0.02, 0.2, 16);
 	material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
@@ -122,7 +122,6 @@
 		arm.position.z = -0.4;
 
 	player.add(arm);
-
 
 
 	// player setting
