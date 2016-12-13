@@ -18,7 +18,7 @@
 	renderer = new THREE.WebGLRenderer();
 	renderer.setSize(window.innerWidth, window.innerHeight);
 	renderer.setPixelRatio( window.devicePixelRatio );
-	document.getElementById('music-room').appendChild(renderer.domElement);
+	document.querySelector('main').appendChild(renderer.domElement);
 
 	// music player
 	let geometry, material;
@@ -30,11 +30,7 @@
 	let playerBody = new THREE.Mesh(geometry, material);
 	player.add(playerBody);
 
-	// wireframe
-	let geo = new THREE.EdgesGeometry(playerBody.geometry); // or WireframeGeometry
-	let mat = new THREE.LineBasicMaterial({ color: Colors.white, linewidth: 2 });
-	let wireframe = new THREE.LineSegments(geo, mat);
-	playerBody.add(wireframe);
+	
 
 	// record
 	geometry = new THREE.CircleGeometry(0.6, 16);
@@ -49,7 +45,7 @@
 		side: THREE.DoubleSide,
 		map: coverTexture
 	});
-	let cover = new THREE.Mesh(geometry, material);
+	
 	cover.position.z = 0.01;
 	record.add(cover);
 
@@ -61,7 +57,6 @@
 
 
 	// arm
-	let count = 0;
 	var ArmCurve = THREE.Curve.create(
 		function (scale = 1) { //custom curve constructor
 			this.scale = scale
@@ -115,8 +110,8 @@
 	head.add(headNiddle);
 
 	arm.add(head);
+	
 	arm.rotation.y = THREE.Math.degToRad(-10);
-
 	arm.position.x = 0.7,
 		arm.position.y = 0.5,
 		arm.position.z = -0.4;

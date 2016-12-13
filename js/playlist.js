@@ -12,7 +12,7 @@ class Playlist {
 				let source = this.context.createBufferSource();
 				source.buffer = decodedData;
 				song.source = source;
-				success(song);
+				success();
 			});
 	}
 
@@ -40,7 +40,7 @@ class Playlist {
 		if (this.seletedIndex != null) {
 			let song = this.songs[this.seletedIndex];
 			if (song.source != null) {
-				return this.songs;
+				return song;
 			} else {
 				console.log('the song is not buffered yet');
 			}

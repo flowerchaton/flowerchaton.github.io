@@ -17,39 +17,51 @@ class RecordPlayer {
 			filter: this.context.createBiquadFilter(),
 			panner: this.context.createPanner(),
 			volume: this.context.createGainNode()
-		}
-		this.requestId = null;
+		};
 		this.isPlaying = false;
 		this.playingSong = null;
 		this.graph = {
 			scene: new THREE.Scene(),
 			camera: new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000),
 			renderer: new THREE.WebGLRenderer()
-		},
-
-			this.requestId = null;
+		};
+		this.requestId = null;
 	}
 
 	play(song) {
 		let playerThis = this;
 		let {scene, camera, renderer} = this.graph;
-		let record = scene.getObjectByName('record');
-		
-		// highpass 
-		// if (this.isPlaying) { this.stop() }
-		// this.nodes.filter.type = 1;
-		// song.source.connect(this.nodes.filter);
-		// this.nodes.filter.connect(this.nodes.panner);
-		// this.nodes.panner.connect(this.nodes.volume);
-		// this.nodes.volume.connect(this.analyser);
-		// song.source.start();
-		// this.isPlaying = true;
-		// this.playingSong = song;
-		recordAnimate();
+		let record = scene.getObjectByName('record'),
+			arm = scene.getObjectByName('arm');
+		//highpass 
+		if (this.isPlaying) { this.stop() }
+		this.nodes.filter.type = 1;
+		song.source.connect(this.nodes.filter);
+		this.nodes.filter.connect(this.nodes.panner);
+		this.nodes.panner.connect(this.nodes.volume);
+		this.nodes.volume.connect(this.analyser);
 
-		function recordAnimate() {
-			playerThis.requestId = requestAnimationFrame(recordAnimate);
-			record.rotation.y += 0.01;
+
+		_animateArm();
+
+		function _animateArm() {
+			playerThis.requestId = requestAnimationFrame(_animateArm);
+			if (arm.rotation.y > THREE.Math.degToRad(-10)) {
+				arm.rotation.y -= 0.005;
+				renderer.render(scene, camera);
+			} else {
+				cancelAnimationFrame(playerThis.requestId);
+				playerThis.requestId = null;
+				song.source.start();
+				playerThis.isPlaying = true;
+				playerThis.playingSong = song;
+				_animateRecord();
+			}
+
+		}
+		function _animateRecord() {
+			playerThis.requestId = requestAnimationFrame(_animateRecord);
+			record.rotation.y -= 0.01;
 			renderer.render(scene, camera);
 		}
 	}
@@ -86,7 +98,7 @@ class RecordPlayer {
 			record.position.y = 0.3;
 			record.position.z = 0.2;
 
-			arm.rotation.y = THREE.Math.degToRad(-10);
+			// arm.rotation.y = THREE.Math.degToRad(-10);
 			arm.position.x = 0.7,
 				arm.position.y = 0.45,
 				arm.position.z = -0.4;
@@ -220,11 +232,5 @@ class RecordPlayer {
 			mesh.add(line);
 		}
 	}
-
-
-
-
-
-
 
 }

@@ -7,16 +7,29 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<script src="js/three.js"></script>
 	<style>
-		#music-room{
-			width: 100%;
-			height: 100%;
-			background: white;
-		}
+
 	</style>
 </head>
+
 <body>
-	<main id="music-room"></main>
-	<script src="js/listen.js"></script>
+	<main></main>
+	<script src="js/record-player.js"></script>
+	<script src="js/playlist.js"></script>
+	<script>
+		let audioContext = new webkitAudioContext();
+		let recordPlayer = new RecordPlayer(audioContext);
+		recordPlayer.render();
+
+		let playlist = new Playlist(audioContext,[{
+			url: './audio/song.m4a'
+		}]);
+		playlist.select(0, (song)=>{
+			recordPlayer.play(playlist.selectedSong)
+		});
+		
+
+	</script>
+	<!--<script src="js/listen.js"></script>-->
 </body>
 
 
