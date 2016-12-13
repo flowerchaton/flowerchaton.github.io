@@ -13,6 +13,7 @@ class Playlist {
 				source.buffer = decodedData;
 				song.source = source;
 				success();
+			
 			});
 	}
 
