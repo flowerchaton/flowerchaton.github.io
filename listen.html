@@ -6,6 +6,7 @@
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<script src="js/three.js"></script>
+	<script src="js/dynamics.js"></script>
 	<style>
 
 	</style>
@@ -26,6 +27,10 @@
 		playlist.select(0, (song)=>{
 			recordPlayer.play(playlist.selectedSong)
 		});
+
+		setTimeout(()=>{
+			recordPlayer.stop();
+		},3000);
 
 	</script>
 	<!--<script src="js/listen.js"></script>-->

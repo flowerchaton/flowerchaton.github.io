@@ -37,52 +37,38 @@ class RecordPlayer {
 		};
 		this.requestId = null;
 		this.animation = {
-
 			arm: {
-				tuneon: function (scope) {
-					let {arm, scene, camera, renderer} = scope.graph;
+				tuneon: function (scope, end) {
 					scope.status = Status.START;
-					_renderFrame();
-					return Promise.resolve();
-
-					function _renderFrame() {
-						if (arm.rotation.y > THREE.Math.degToRad(-10)) {
-							arm.rotation.y -= 0.005;
-							renderer.render(scene, camera);
-							scope.requestId = requestAnimationFrame(_renderFrame);
-						} else {
-							cancelAnimationFrame(scope.requestId);
-							scope.requestId = null;
-							scope.status = Status.READY;
-
-						}
-					}
+					dynamics.animate(scope.graph.arm.rotation,
+						{ y: THREE.Math.degToRad(-8) },
+						{
+							duration: 1000,
+							complete: end
+						});
 				},
-				tuneoff: function () {
-					return Promise.resolve();
+				tuneoff: function (scope) {
+					dynamics.animate(scope.graph.arm.rotation,
+						{ y: THREE.Math.degToRad(0) },
+						{
+							type: dynamics.spring,
+							frequency: 200,
+							friction: 400,
+							duration: 2000
+						});
 				}
 			},
 
 			record: {
-				start: function (scope, song) {
-					let {record, scene, camera, renderer} = scope.graph;
-					_renderFrame();
-					function _renderFrame() {
-						if (scope.status === Status.READY) {
-							scope.status = Status.PLAYING;
-							song.source.start();
-							requestAnimationFrame(_renderFrame);
-						} else if (scope.status === Status.PLAYING) {
-							record.rotation.y -= 0.01;
-							renderer.render(scene, camera);
-							scope.requestId = requestAnimationFrame(_renderFrame);
-						} else if (scope.status === Status.START) {
-							requestAnimationFrame(_renderFrame);
-						}
+				start: function (scope) {
+					loop();
+					function loop() {
+						scope.graph.record.rotation.y -= 0.01;
+						scope.requestId = requestAnimationFrame(loop);
 					}
 				},
-				stop: function () {
-					console.log('record stop');
+				stop: function (scope) {
+					cancelAnimationFrame(scope.requestId);
 				}
 			}
 		}
@@ -90,18 +76,18 @@ class RecordPlayer {
 
 	play(song) {
 		this._initAudio(song);
-		this.animation.arm.tuneon(this)
-			.then(() => {
-				this.animation.record.start(this, song);
-			});
+		this.animation.arm.tuneon(this, () => {
+			this.animation.record.start(this);
+			this.playingSong = song;
+			song.source.start();
+		});
 	}
 
-	// let playerThis = this;
-	// let {scene, camera, renderer} = this.graph;
-	// let record = scene.getObjectByName('record'),
-	// 	arm = scene.getObjectByName('arm');
-	// //highpass 
-	// if (this.isPlaying) { this.stop() }
+	stop() {
+		this.animation.arm.tuneoff(this);
+		this.animation.record.stop(this);
+		this.playingSong.source.stop();
+	}
 
 	_initAudio(song) {
 		song.source.connect(this.nodes.filter);
@@ -112,42 +98,6 @@ class RecordPlayer {
 		this.nodes.filter.connect(this.nodes.panner);
 		this.nodes.panner.connect(this.nodes.volume);
 		this.nodes.volume.connect(this.analyser);
-	}
-
-	// _animateArm();
-
-	// function _animateArm() {
-	// playerThis.requestId = requestAnimationFrame(_animateArm);
-	// if (arm.rotation.y > THREE.Math.degToRad(-10)) {
-	// 	arm.rotation.y -= 0.005;
-	// 	renderer.render(scene, camera);
-	// } else {
-	// 		// stop arm animation
-	// 		cancelAnimationFrame(playerThis.requestId);
-	// 		playerThis.requestId = null;
-	// 		// start record animation and play some music
-	// 		song.source.start();
-
-	// 		playerThis.isPlaying = true;
-	// 		playerThis.playingSong = song;
-	// 		_animateRecord();
-	// 	}
-
-	// }
-	// function _animateRecord() {
-	// 	playerThis.requestId = requestAnimationFrame(_animateRecord);
-	// 	var dataArray = new Uint8Array(playerThis.analyser.frequencyBinCount);
-	// 	playerThis.analyser.getByteFrequencyData(dataArray);
-
-	// 	record.rotation.y -= 0.01;
-	// 	renderer.render(scene, camera);
-	// }
-
-	stop() {
-		//this.playingSong.source.stop();
-		window.cancelAnimationFrame(this.requestId);
-		this.isPlaying = false;
-		this.playingSong = null;
 	}
 
 	render() {
@@ -162,8 +112,12 @@ class RecordPlayer {
 		let player = this._createPlayerModel();
 		player.rotateX(THREE.Math.degToRad(50));
 		scene.add(player);
+		_renderFrame();
 
-		renderer.render(scene, camera);
+		function _renderFrame() {
+			renderer.render(scene, camera);
+			requestAnimationFrame(_renderFrame);
+		}
 	}
 
 	_createPlayerModel() {
