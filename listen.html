@@ -6,7 +6,10 @@
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<script src="js/three.js"></script>
+	<script src="js/OrbitControls.js"></script>
 	<script src="js/dynamics.js"></script>
+	<script src="js/Vibrant.js"></script>
+	<script src="js/color-thief.min.js"></script>
 	<style>
 
 	</style>
@@ -24,13 +27,11 @@
 		let playlist = new Playlist(audioContext,[{
 			url: './audio/song.m4a'
 		}]);
-		playlist.select(0, (song)=>{
+		playlist.select(0, ()=>{
 			recordPlayer.play(playlist.selectedSong)
 		});
-
-		setTimeout(()=>{
-			recordPlayer.stop();
-		},3000);
+		
+	
 
 	</script>
 	<!--<script src="js/listen.js"></script>-->

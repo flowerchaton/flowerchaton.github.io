@@ -1,13 +1,15 @@
 
-let Colors = {
+const Colors = {
 	lightGrey: 0xd7d7d7,
 	deepGrey: 0x727272,
 	black: 0x000000,
 	white: 0xffffff,
 	green: 0x00ff7f,
-	lightblue: 0xf0f8ff
+	lightblue: 0xf0f8ff,
+	lightPink: 0xffe0f0
+
 }
-let Status = {
+const Status = {
 	START: 0,
 	READY: 1,
 	PLAYING: 2,
@@ -33,9 +35,10 @@ class RecordPlayer {
 			renderer: new THREE.WebGLRenderer(),
 			body: this._createBody(),
 			record: this._createRecord(),
-			arm: this._createArm()
+			arm: this._createArm(),
+			barGroup: this._createFreqBarGroup()
 		};
-		this.requestId = null;
+		this.requestId = { record: null, freqBar: null };
 		this.animation = {
 			arm: {
 				tuneon: function (scope, end) {
@@ -64,21 +67,61 @@ class RecordPlayer {
 					loop();
 					function loop() {
 						scope.graph.record.rotation.y -= 0.01;
-						scope.requestId = requestAnimationFrame(loop);
+						scope.requestId.record = requestAnimationFrame(loop);
 					}
 				},
 				stop: function (scope) {
-					cancelAnimationFrame(scope.requestId);
+					cancelAnimationFrame(scope.requestId.record);
+				}
+			},
+
+			freqBar: {
+				show: function (scope) {
+					let barGroup = scope.graph.barGroup;
+					let bufferLength = scope.analyser.frequencyBinCount,
+						dataArray = new Float32Array(bufferLength);
+
+					let albumCover, barColors = [];
+					albumCover = new Image(200, 200);
+					albumCover.src = './img/fc.jpg';
+					albumCover.onload = () => {
+						let colorThief = new ColorThief();
+						let palette = colorThief.getPalette(albumCover, 11);
+						palette.forEach((rgb, index)=>{
+							barColors.push(new THREE.Color(`rgb(${rgb[0]},${rgb[1]},${rgb[2]})`));
+						});
+
+						barGroup.children.forEach((child, index) => {
+							child.children.forEach((mesh) => {
+								mesh.material.color.set(barColors[index]);
+								mesh.material.needsUpdate = true;
+							})
+						});
+					}
+
+
+					loop();
+					function loop() {
+						scope.analyser.getFloatFrequencyData(dataArray);
+						scope.requestId.freqBar = requestAnimationFrame(loop);
+						barGroup.children.forEach((child, index) => {
+							child.scale.y = -dataArray[index] / 60;
+						});
+					}
+				},
+				vanish: function (scope) {
+					cancelAnimationFrame(scope.requestId.freqBar);
 				}
 			}
 		}
 	}
 
 	play(song) {
+		this.playingSong = song;
 		this._initAudio(song);
 		this.animation.arm.tuneon(this, () => {
+			this.animation.freqBar.show(this);
 			this.animation.record.start(this);
-			this.playingSong = song;
 			song.source.start();
 		});
 	}
@@ -86,6 +129,7 @@ class RecordPlayer {
 	stop() {
 		this.animation.arm.tuneoff(this);
 		this.animation.record.stop(this);
+		this.animation.freqBar.vanish(this);
 		this.playingSong.source.stop();
 	}
 
@@ -102,18 +146,20 @@ class RecordPlayer {
 
 	render() {
 		let playerThis = this;
-		let {scene, camera, renderer} = this.graph;
+		const {scene, camera, renderer, barGroup} = this.graph;
 		scene.background = new THREE.Color(Colors.lightblue);
 		camera.position.z = 4;
 		renderer.setSize(window.innerWidth, window.innerHeight);
 		renderer.setPixelRatio(window.devicePixelRatio);
 		document.querySelector('main').appendChild(renderer.domElement);
+		const controls = new THREE.OrbitControls(camera, renderer.domElement);
+
 
 		let player = this._createPlayerModel();
 		player.rotateX(THREE.Math.degToRad(50));
 		scene.add(player);
-		_renderFrame();
 
+		_renderFrame();
 		function _renderFrame() {
 			renderer.render(scene, camera);
 			requestAnimationFrame(_renderFrame);
@@ -122,22 +168,23 @@ class RecordPlayer {
 
 	_createPlayerModel() {
 		let player = new THREE.Object3D();
-		let {body, record, arm} = this.graph;
+		let {body, record, arm, barGroup} = this.graph;
 
 		record.position.y = 0.3;
 		record.position.z = 0.2;
-
 		// arm.rotation.y = THREE.Math.degToRad(-10);
 		arm.position.x = 0.7,
 			arm.position.y = 0.45,
 			arm.position.z = -0.4;
-		player.add(...[body, record, arm]);
+
+		barGroup.position.x = -1.2;
+		player.add(...[body, record, arm, barGroup]);
 		player.name = 'player';
 		return player;
 	}
 
 	_createBody() {
-		let geometry = new THREE.BoxGeometry(2, 0.4, 2);
+		let geometry = new THREE.BoxBufferGeometry(2, 0.4, 2);
 		let material = new THREE.MeshBasicMaterial({
 			color: Colors.lightGrey,
 			transparent: true,
@@ -156,8 +203,9 @@ class RecordPlayer {
 	}
 
 	_createRecord() {
-		let geometry = new THREE.CylinderGeometry(0.6, 0.6, 0.02, 16);
+		let geometry = new THREE.CylinderGeometry(0.6, 0.6, 0.02, 32);
 		let material = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide });
+
 		for (var i = 0; i < Object.keys(geometry.faces).length; i++) {
 			if (geometry.faces[i].normal.y == 0) {
 				geometry.faces[i].color.setHex(Colors.deepGrey);
@@ -171,7 +219,7 @@ class RecordPlayer {
 
 		// record cover
 
-		let geo = new THREE.CircleGeometry(0.3, 16);
+		let geo = new THREE.CircleBufferGeometry(0.3, 16);
 		let mat = new THREE.MeshBasicMaterial({
 			color: Colors.white,
 			side: THREE.DoubleSide
@@ -218,7 +266,7 @@ class RecordPlayer {
 		);
 		let scale = 0.8,
 			path = new ArmCurve(scale),
-			geometry = new THREE.TubeGeometry(path, 20, scale * 0.03, 32, false),
+			geometry = new THREE.TubeBufferGeometry(path, 20, scale * 0.03, 32, false),
 			material = new THREE.MeshBasicMaterial({
 				color: Colors.green
 			});
@@ -226,19 +274,19 @@ class RecordPlayer {
 		this._addWireFrame(arm, Colors.white);
 
 		// gyroscope
-		geometry = new THREE.CylinderGeometry(0.15, 0.15, 0.4, 32);
+		geometry = new THREE.CylinderBufferGeometry(0.15, 0.15, 0.4, 32);
 		let gyroscope = new THREE.Mesh(geometry, material);
 		gyroscope.position.y = -0.1;
 		this._addWireFrame(gyroscope, Colors.white);
 
 		// head
-		geometry = new THREE.BoxGeometry(0.1, 0.1, 0.1);
+		geometry = new THREE.BoxBufferGeometry(0.1, 0.1, 0.1);
 		let head = new THREE.Mesh(geometry, material);
 		head.position.z = 0.8;
 		head.position.x = -0.15;
 		this._addWireFrame(head, Colors.white);
 		// niddle
-		geometry = new THREE.ConeGeometry(0.02, 0.2, 16);
+		geometry = new THREE.ConeBufferGeometry(0.02, 0.2, 16);
 		let headNiddle = new THREE.Mesh(geometry, material);
 		headNiddle.rotation.x = THREE.Math.degToRad(180);
 		headNiddle.position.y = -0.08;
@@ -254,8 +302,39 @@ class RecordPlayer {
 
 	}
 
+	_createFreqBarGroup() {
+		let barNum = 10,
+			radius = 0.05,
+			height = 1,
+			group = new THREE.Object3D();
+		for (let i = 0; i < barNum; i++) {
+			let bar = new THREE.Object3D();
+			let material = new THREE.MeshBasicMaterial({
+				color: Colors.lightPink,
+				transparent: true,
+				opacity: 0.9,
+				side: THREE.DoubleSide
+			});
+
+			let cylinder = new THREE.CylinderBufferGeometry(radius, radius, height, 32),
+				sphere = new THREE.SphereBufferGeometry(radius, 32, 32, 0, 6.3, 1.5, 3.1);
+			let cylinderMesh = new THREE.Mesh(cylinder, material),
+				sphereMesh = new THREE.Mesh(sphere, material);
+			bar.add(...[cylinderMesh, sphereMesh]);
+			cylinderMesh.position.y = height / 2;
+			sphereMesh.rotation.x = THREE.Math.degToRad(180);
+			sphereMesh.position.y = height;
+			bar.position.z = (1 - radius) - i * 2 / barNum;
+			bar.scale.y = 0;
+			group.add(bar);
+
+		}
+		group.name = 'barGroup';
+		return group;
+	}
+
 	_addWireFrame(mesh, color) {
-		let edge = new THREE.EdgesGeometry(mesh.geometry, 40); // the second parameter solves your problem ;)
+		let edge = new THREE.EdgesGeometry(mesh.geometry, 20); // the second parameter solves your problem ;)
 		let line = new THREE.LineSegments(edge, new THREE.LineBasicMaterial({ color: color }));
 		mesh.add(line);
 	}

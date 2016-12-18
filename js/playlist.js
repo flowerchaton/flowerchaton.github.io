@@ -13,14 +13,13 @@ class Playlist {
 				source.buffer = decodedData;
 				song.source = source;
 				success();
-			
 			});
 	}
 
 	load(song, success) {
 		if (!song.hasOwnProperty('source')) {
 			let request = new XMLHttpRequest();
-			request.open('GET', song.url, false);
+			request.open('GET', song.url, true);
 			request.responseType = 'arraybuffer';
 			request.onload = (event) => {
 				let audioData = event.target.response;
