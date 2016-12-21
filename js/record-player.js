@@ -9,6 +9,7 @@ const Colors = {
 	lightPink: 0xffe0f0
 
 }
+
 const Status = {
 	START: 0,
 	READY: 1,
@@ -52,7 +53,7 @@ class RecordPlayer {
 				},
 				tuneoff: function (scope) {
 					dynamics.animate(scope.graph.arm.rotation,
-						{ y: THREE.Math.degToRad(0) },
+						{ y: THREE.Math.degToRad(5) },
 						{
 							type: dynamics.spring,
 							frequency: 200,
@@ -81,25 +82,6 @@ class RecordPlayer {
 					let bufferLength = scope.analyser.frequencyBinCount,
 						dataArray = new Float32Array(bufferLength);
 
-					let albumCover, barColors = [];
-					albumCover = new Image(200, 200);
-					albumCover.src = './img/fc.jpg';
-					albumCover.onload = () => {
-						let colorThief = new ColorThief();
-						let palette = colorThief.getPalette(albumCover, 11);
-						palette.forEach((rgb, index)=>{
-							barColors.push(new THREE.Color(`rgb(${rgb[0]},${rgb[1]},${rgb[2]})`));
-						});
-
-						barGroup.children.forEach((child, index) => {
-							child.children.forEach((mesh) => {
-								mesh.material.color.set(barColors[index]);
-								mesh.material.needsUpdate = true;
-							})
-						});
-					}
-
-
 					loop();
 					function loop() {
 						scope.analyser.getFloatFrequencyData(dataArray);
@@ -110,6 +92,9 @@ class RecordPlayer {
 					}
 				},
 				vanish: function (scope) {
+					scope.graph.barGroup.children.forEach((child, index) => {
+						child.scale.y = 0;
+					});
 					cancelAnimationFrame(scope.requestId.freqBar);
 				}
 			}
@@ -118,7 +103,7 @@ class RecordPlayer {
 
 	play(song) {
 		this.playingSong = song;
-		this._initAudio(song);
+		this._initAudioConfig();
 		this.animation.arm.tuneon(this, () => {
 			this.animation.freqBar.show(this);
 			this.animation.record.start(this);
@@ -133,8 +118,9 @@ class RecordPlayer {
 		this.playingSong.source.stop();
 	}
 
-	_initAudio(song) {
-		song.source.connect(this.nodes.filter);
+	_initAudioConfig() {
+
+		this.playingSong.source.connect(this.nodes.filter);
 		this.analyser.connect(this.context.destination);
 		this.analyser.fftSize = 256;
 		this.analyser.smoothingTimeConstant = 0.85;
@@ -142,6 +128,9 @@ class RecordPlayer {
 		this.nodes.filter.connect(this.nodes.panner);
 		this.nodes.panner.connect(this.nodes.volume);
 		this.nodes.volume.connect(this.analyser);
+		this.playingSong.source.onended = () => {
+			this.stop();
+		}
 	}
 
 	render() {
@@ -166,13 +155,33 @@ class RecordPlayer {
 		}
 	}
 
+	_loadRecord() {
+		let albumCover, barColors = [];
+		albumCover = new Image(200, 200);
+		albumCover.src = './img/fc.jpg';
+		albumCover.onload = () => {
+			let colorThief = new ColorThief();
+			let palette = colorThief.getPalette(albumCover, 11);
+			palette.forEach((rgb, index) => {
+				barColors.push(new THREE.Color(`rgb(${rgb[0]},${rgb[1]},${rgb[2]})`));
+			});
+
+			this.graph.barGroup.children.forEach((child, index) => {
+				child.children.forEach((mesh) => {
+					mesh.material.color.set(barColors[index]);
+					mesh.material.needsUpdate = true;
+				})
+			});
+		}
+	}
+
 	_createPlayerModel() {
 		let player = new THREE.Object3D();
 		let {body, record, arm, barGroup} = this.graph;
 
 		record.position.y = 0.3;
 		record.position.z = 0.2;
-		// arm.rotation.y = THREE.Math.degToRad(-10);
+		arm.rotation.y = THREE.Math.degToRad(5);
 		arm.position.x = 0.7,
 			arm.position.y = 0.45,
 			arm.position.z = -0.4;
@@ -225,19 +234,18 @@ class RecordPlayer {
 			side: THREE.DoubleSide
 		});
 		let cover = new THREE.Mesh(geo, mat);
-
+		cover.name = 'cover';
 		let loader = new THREE.TextureLoader();
 		loader.load('./img/fc.jpg', (texture) => {
 			texture.mapping = THREE.UVMapping;
 			mat.map = texture;
+			this._loadRecord()
 			cover.material.needsUpdate = true;
-			this.graph.renderer.render(this.graph.scene, this.graph.camera);
 		});
 
 		cover.rotateX(THREE.Math.degToRad(90));
 		cover.position.y = 0.02;
 		record.add(cover);
-		record.name = 'record';
 		return record;
 	}
 
@@ -295,9 +303,6 @@ class RecordPlayer {
 		head.add(headNiddle);
 		arm.add(gyroscope);
 		arm.add(head);
-
-
-		arm.name = 'arm';
 		return arm;
 
 	}
@@ -329,7 +334,6 @@ class RecordPlayer {
 			group.add(bar);
 
 		}
-		group.name = 'barGroup';
 		return group;
 	}
 
