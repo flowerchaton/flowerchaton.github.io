@@ -26,10 +26,11 @@ class RecordPlayer {
 		this.nodes = {
 			filter: this.context.createBiquadFilter(),
 			panner: this.context.createPanner(),
-			volume: this.context.createGainNode()
+			volume: this.context.createGain()
 		};
 		this.status = Status.STOP;
 		this.playingSong = null;
+		
 		this.graph = {
 			scene: new THREE.Scene(),
 			camera: new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000),
@@ -124,7 +125,7 @@ class RecordPlayer {
 		this.analyser.connect(this.context.destination);
 		this.analyser.fftSize = 256;
 		this.analyser.smoothingTimeConstant = 0.85;
-		this.nodes.filter.type = 1;
+		this.nodes.filter.type = 'highpass';
 		this.nodes.filter.connect(this.nodes.panner);
 		this.nodes.panner.connect(this.nodes.volume);
 		this.nodes.volume.connect(this.analyser);
