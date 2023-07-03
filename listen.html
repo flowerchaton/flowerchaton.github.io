@@ -19,7 +19,7 @@
 	<script src="js/record-player.js"></script>
 	<script src="js/playlist.js"></script>
 	<script>
-		let audioContext = new webkitAudioContext();
+		let audioContext = new window.AudioContext();
 		let recordPlayer = new RecordPlayer(audioContext);
 		recordPlayer.render();
 
